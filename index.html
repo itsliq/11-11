@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11:11 Make a Wish ✨</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #f7f4ef;         /* Soft warm beige */
+      --card-bg: #ffffff;         /* Clean white card */
+      --text-main: #2d2b2a;       /* Muted charcoal */
+      --text-muted: #78726d;      /* Muted gray */
+      --accent-warm: #d8c2b0;     /* Soft warm accent */
+      --accent-border: #e6ded6;   /* Subtle border color */
+      --button-bg: #3a3735;       /* Dark neutral button */
+      --button-hover: #54504d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Floating Hearts Background */
+    .heart-bg {
+      position: fixed;
+      top: -10vh;
+      color: rgba(216, 194, 176, 0.4);
+      font-size: 1.2rem;
+      user-select: none;
+      pointer-events: none;
+      animation: fall linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(115vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Audio Toggle Button */
+    .music-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--accent-border);
+      padding: 10px 16px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      z-index: 10;
+      transition: all 0.3s ease;
+      color: var(--text-main);
+    }
+    .music-btn:hover {
+      background: #ffffff;
+      transform: scale(1.05);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 460px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 11:11 Header */
+    .time-header {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: var(--text-main);
+      margin-bottom: 5px;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .time-sub {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 35px;
+      font-weight: 400;
+    }
+
+    /* Main Card */
+    .wish-card {
+      background: var(--card-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 24px;
+      padding: 40px 28px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.03);
+      position: relative;
+      transition: all 0.4s ease;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Interactive Text */
+    .wish-text {
+      font-size: 1.25rem;
+      color: var(--text-main);
+      line-height: 1.6;
+      margin-bottom: 25px;
+      font-weight: 500;
+    }
+
+    .sub-hint {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: -15px;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    /* Buttons */
+    .btn {
+      background-color: var(--button-bg);
+      color: #ffffff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn:hover {
+      background-color: var(--button-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Choices Area */
+    .choice-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 25px;
+      width: 100%;
+      position: relative;
+      min-height: 60px;
+    }
+
+    .btn-yes {
+      background-color: #2d2b2a;
+      min-width: 110px;
+    }
+
+    .btn-no {
+      background-color: #8c857b;
+      min-width: 110px;
+      position: absolute;
+      transition: all 0.2s ease;
+    }
+
+    .proposal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    /* Polaroid Styles */
+    .polaroid-wrapper {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    .polaroid {
+      background: white;
+      padding: 8px 8px 18px 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      border: 1px solid #eaeaea;
+      border-radius: 4px;
+      width: 110px;
+      transform: rotate(-3deg);
+      transition: transform 0.3s ease;
+    }
+    .polaroid:nth-child(2) {
+      transform: rotate(4deg);
+    }
+    .polaroid:hover {
+      transform: scale(1.08) rotate(0deg);
+      z-index: 5;
+    }
+    .polaroid img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 2px;
+    }
+
+    /* Message Output (Typewriter) */
+    .message-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      margin-bottom: 15px;
+      color: var(--text-main);
+    }
+
+    .message-body {
+      font-size: 1.02rem;
+      line-height: 1.75;
+      color: #4a4643;
+      text-align: left;
+      white-space: pre-line;
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Music Button & Audio -->
+  <button class="music-btn" id="musicBtn" onclick="toggleAudio()">🎵 Play Music</button>
+  <audio id="bgMusic" loop src="song.mp3"></audio>
+
+  <div class="container">
+    <div class="time-header" id="timeHeader">11:11</div>
+    <div class="time-sub" id="timeSub">make a wish</div>
+
+    <div class="wish-card" id="wishCard">
+      
+      <!-- Stage 1 -->
+      <div id="stageInitial" class="fade-in">
+        <p class="wish-text" id="wishPrompt">wanna know my wish rn?</p>
+        <p class="sub-hint" id="subHint" style="display: none;"></p>
+        <button class="btn" id="clickBtn" onclick="handleStepClick()">click this ✨</button>
+      </div>
+
+      <!-- Stage 2: Proposal -->
+      <div id="stageProposal" style="display: none;" class="fade-in">
+        <h2 class="proposal-title">WILL YOU BE MY GIRLFRIEND? 🤍</h2>
+        <div class="choice-container" id="choiceContainer">
+          <button class="btn btn-yes" onclick="handleYes()">YES</button>
+          <button class="btn btn-no" id="noBtn" onmouseover="moveNoButton()" onclick="moveNoButton()">NO</button>
+        </div>
+      </div>
+
+      <!-- Stage 3: Final Letter & Photos -->
+      <div id="stageMessage" style="display: none;" class="fade-in">
+        <!-- Optional Polaroids (Ilagay ang photo files sa folder kung mayroon) -->
+        <div class="polaroid-wrapper">
+          <div class="polaroid"><img src="photo1.jpg" alt="Memory 1" onerror="this.parentElement.style.display='none'"></div>
+          <div class="polaroid"><img src="photo2.jpg" alt="Memory 2" onerror="this.parentElement.style.display='none'"></div>
+        </div>
+
+        <h2 class="message-title">To my favorite 11:11... ✨</h2>
+        <div class="message-body" id="typewriterText"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 1. Generate Floating Hearts
+    function createHearts() {
+      const heartCount = 15;
+      for (let i = 0; i < heartCount; i++) {
+        const heart = document.createElement('div');
+        heart.classList.add('heart-bg');
+        heart.innerText = '🤍';
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+        heart.style.animationDelay = Math.random() * 5 + 's';
+        document.body.appendChild(heart);
+      }
+    }
+    createHearts();
+
+    // 2. Audio Toggle
+    const audio = document.getElementById('bgMusic');
+    const musicBtn = document.getElementById('musicBtn');
+    function toggleAudio() {
+      if (audio.paused) {
+        audio.play();
+        musicBtn.innerText = "⏸️ Pause Music";
+      } else {
+        audio.pause();
+        musicBtn.innerText = "🎵 Play Music";
+      }
+    }
+
+    // 3. Click Counter Stage
+    let clickCount = 0;
+    function handleStepClick() {
+      clickCount++;
+      const wishPrompt = document.getElementById('wishPrompt');
+      const subHint = document.getElementById('subHint');
+      const clickBtn = document.getElementById('clickBtn');
+
+      // Auto-play audio upon interaction if not playing
+      if (audio.paused) { toggleAudio(); }
+
+      if (clickCount === 1) {
+        wishPrompt.innerText = "kiss muna..... kidding!";
+        subHint.style.display = "block";
+        subHint.innerText = "click it 3 times para iloveyou 💕";
+        clickBtn.innerText = "Click again (1/3)";
+      } else if (clickCount === 2) {
+        clickBtn.innerText = "One more click! (2/3)";
+      } else if (clickCount >= 3) {
+        document.getElementById('stageInitial').style.display = 'none';
+        document.getElementById('stageProposal').style.display = 'block';
+        setupNoButton();
+      }
+    }
+
+    function setupNoButton() {
+      const noBtn = document.getElementById('noBtn');
+      noBtn.style.position = 'relative';
+      noBtn.style.left = '0px';
+      noBtn.style.top = '0px';
+    }
+
+    function moveNoButton() {
+      const noBtn = document.getElementById('noBtn');
+      const container = document.getElementById('wishCard');
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+
+      const maxX = containerRect.width - btnRect.width - 40;
+      const maxY = containerRect.height - btnRect.height - 40;
+
+      const randomX = Math.floor(Math.random() * maxX) - (maxX / 2);
+      const randomY = Math.floor(Math.random() * maxY) - (maxY / 2);
+
+      noBtn.style.position = 'absolute';
+      noBtn.style.left = `calc(50% - ${btnRect.width/2}px + ${randomX}px)`;
+      noBtn.style.top = `calc(65% + ${randomY}px)`;
+    }
+
+    // 4. Typewriter Effect
+    const fullMessage = `i know you would, baby. pero puwede bang bukas mo ako sagutin? (or whatever date you would choose) HAHAHAHAHA 
+
+on a serious note, i’m sorry i couldn’t make this special as it should be, baby. gawa kasi ng bagyo, naiinip na ako 😭 
+
+instead, i made this website na lang and i’ll do everything to make you happy everyday. i’ll bawi next time, lovey. 
+
+i wanna let you know that i love you, and i will always do. sorry po ngayon ko lang ginawa ‘to. and sorry if biglaan, i don’t want to keep you still guessing kung ano ba tayo 🙁 
+
+I LOVE YOU, MY 11:11 🤍
+
+thank you, baby. you can go back and talk to me na ulit sa IG, mwa ✨`;
+
+    function typeWriter(text, elementId, speed = 30) {
+      let i = 0;
+      const element = document.getElementById(elementId);
+      element.innerHTML = "";
+      
+      function type() {
+        if (i < text.length) {
+          element.innerHTML += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        }
+      }
+      type();
+    }
+
+    function handleYes() {
+      document.getElementById('stageProposal').style.display = 'none';
+      document.getElementById('timeSub').innerText = "wish came true ✨";
+      document.getElementById('stageMessage').style.display = 'block';
+
+      // Start Typewriter
+      typeWriter(fullMessage, 'typewriterText', 35);
+
+      // Trigger Confetti
+      confetti({
+        particleCount: 140,
+        spread: 90,
+        origin: { y: 0.6 },
+        colors: ['#d8c2b0', '#3a3735', '#f7f4ef', '#e6ded6']
+      });
+    }
+  </script>
+
+</body>
+</html>
